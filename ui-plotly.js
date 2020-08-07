@@ -73,7 +73,7 @@ module.exports = function(RED) {
 */
     function checkConfig(node, conf) {
         if (!conf || !conf.hasOwnProperty("group")) {
-            node.error(RED._("plotlychart.error.no-group"));
+            node.error(RED._("ui_plotly.error.no-group"));
             return false;
         }
         return true;
@@ -103,7 +103,7 @@ module.exports = function(RED) {
 * all properties are available in the config variable).
 *
 */
-    function plotlychart(config) {
+    function PlotlyChart(config) {
         try {
             var node = this;
             if(ui === undefined) {
@@ -131,7 +131,6 @@ module.exports = function(RED) {
                     storeFrontEndInputAsState: false,       // *REQUIRED* If the widgect accepts user input - should it update the backend stored state ?
 
 /********************************************************************
-
 /********************************************************************
 * !!REQUIRED!!
 *
@@ -247,7 +246,6 @@ module.exports = function(RED) {
                         };
 /*******************************************************************/
 
-
                     }
                 });
             }
@@ -278,7 +276,6 @@ module.exports = function(RED) {
 * Note: the name must begin with "ui_".
 */
     setImmediate(function() {
-        RED.nodes.registerType("ui_plotly", plotlychart);
+        RED.nodes.registerType("ui_plotly", PlotlyChart);
     })
 }
-
