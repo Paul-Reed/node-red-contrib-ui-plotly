@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 Seth350
+ * Copyright 2020 Paul Reed
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ module.exports = function(RED) {
 */
     function checkConfig(node, conf) {
         if (!conf || !conf.hasOwnProperty("group")) {
-            node.error(RED._("ui_my-little-ui-node.error.no-group"));
+            node.error(RED._("plotlychart.error.no-group"));
             return false;
         }
         return true;
@@ -102,7 +102,7 @@ module.exports = function(RED) {
 * all properties are available in the config variable).
 *
 */
-    function MyLittleUiNode(config) {
+    function plotlychart(config) {
         try {
             var node = this;
             if(ui === undefined) {
@@ -277,6 +277,6 @@ module.exports = function(RED) {
 * of the function (see line #87) that will return your nodes's configuration.
 * Note: the name must begin with "ui_".
 */
-    RED.nodes.registerType("ui_plotly", Plotly);
+    RED.nodes.registerType("ui_plotly", plotlychart);
 }
 
