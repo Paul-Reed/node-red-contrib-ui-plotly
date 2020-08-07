@@ -1,5 +1,5 @@
 <!--
-  Copyright 2018, Seth350
+  Copyright 2020 Paul Reed
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -37,7 +37,7 @@
 // Your name must also begin with "ui_", otherwise it will not show up in the
 // dashboard tab under it's assigned group.
 // Should you need a space, use a hypen ( - ) instead.
-    RED.nodes.registerType('ui_my-little-ui-node',{
+    RED.nodes.registerType('ui_plotly-chart',{
 //*********************************************************************************
 //*********************************************************************************
 //                        !!!!!!!!!NOTE!!!!!!!!!
@@ -154,7 +154,7 @@
 // },
 //
 //********************************************************************************* BEGIN USER DEFINED DEFAULT VALUES
-            textLabel: {value:'My Little UI Node'},
+            textLabel: {value:'Plotly Chart'},
             textColor: {value:'#000000'}
         },
 //********************************************************************************* END USER DEFINED DEFAULT VALUES
@@ -184,7 +184,7 @@
 // The name of your node as it would appear in the node selection side bar.
 // Lowercase & spaces are only permitted here.
 
-        paletteLabel:"plotly",
+        paletteLabel:"Plotly Chart",
 
 //*********************************************************************************
 // !!REQUIRED!!
@@ -195,7 +195,7 @@
 // Typically, set this to the same name of your node.
 // Spaces are permitted.
         label: function() {
-            return this.name||"my little UI node";
+            return this.name||"Plotly Chart";
         },
         labelStyle: function() {
             return this.name?"node_label_italic":"";
@@ -244,11 +244,11 @@
 <!--
 ***********************************************************************************
 ** This setion must begin with:
-** <script type="text/x-html" data-template-name="ui_yournodenamehere">
+** <script type="text/html" data-template-name="ui_yournodenamehere">
 ** It should be the same name that you are registering with Node-RED (see line #26).
 ***********************************************************************************
 -->
-<script type="text/x-html" data-template-name="ui_plotly">
+<script type="text/html" data-template-name="ui_plotly-chart">
     <!--***************************************************************************
     ** !!REQUIRED!!
     **
@@ -345,11 +345,11 @@
 ** The data-help-name must be the same name as you have registered this node with.
 **
 ** This setion must begin with:
-** <script type="text/x-html" data-template-name="ui_yournodenamehere">
+** <script type="text/html" data-template-name="ui_yournodenamehere">
 ** It should be the same name that you are registering with Node-RED (see line #26).
 ************************************************************************************
 -->
-<script type="text/x-html" data-help-name="ui_plotly">
+<script type="text/html" data-help-name="ui_plotly-chart">
     <p>A Node-RED dashboard ui node to display text with a defined color on the dashboard.</p>
     <p>Use this node as a template for building your own ui node.</p>
 </script>
