@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 /**
  * Copyright 2020 Paul Reed
  *
@@ -60,7 +61,7 @@ module.exports = function(RED) {
         <input type='text' style='color:` + config.textColor + `;' ng-init='init(` + configAsJson + `)' ng-model='textContent' ng-keydown='enterkey($event)'>
         `;
         return html;
-    };
+    }
 
 /********************************************************************
 * REQUIRED
@@ -90,7 +91,7 @@ module.exports = function(RED) {
 
     var ui = undefined;
 
-/******************************************************************** */
+/*********************************************************************/
 
 
 /*********************************************************************
@@ -182,7 +183,7 @@ module.exports = function(RED) {
 * the Node-RED flow.
 */
                     initController: function($scope, events) {
-                        debugger;
+                        //debugger;
 
                         $scope.flag = true;   // not sure if this is needed?
 
@@ -258,8 +259,7 @@ module.exports = function(RED) {
 
 /*******************************************************************
 * !!REQUIRED!!
-* TODO: Get with team on purpose of this node.
-* There is no need to edit these lines.
+* If you need to do any handling before closing do it here then call done().
 */
         node.on("close", function() {
             if (done) {
@@ -277,6 +277,8 @@ module.exports = function(RED) {
 * of the function (see line #87) that will return your nodes's configuration.
 * Note: the name must begin with "ui_".
 */
-    RED.nodes.registerType("ui_plotly", plotlychart);
+    setImmediate(function() {
+        RED.nodes.registerType("ui_plotly", plotlychart);
+    })
 }
 
