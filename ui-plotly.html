@@ -11,101 +11,13 @@
   limitations under the License.
 -->
 
-<!--
-***********************************************************************************
-** My Little UI Node
-** This is a template to help you create your very own ui node. This is meant as
-** a quickstart template that will show you what code is required and what code
-** and sections are free for you to change or make additions to.
-**
-***********************************************************************************
--->
-
-
-<!--
-***********************************************************************************
-** !!REQUIRED!!
-** The .html file must ALWAYS begin with
-**  <script type="text/javascript">
-***********************************************************************************
--->
 <script type="text/javascript">
-//*********************************************************************************
-// !!REQUIRED!!
-// This line is where you will register your node with a name and configuration.
-// Your name must be all lower-case letters and without spaces.
-// Your name must also begin with "ui_", otherwise it will not show up in the
-// dashboard tab under it's assigned group.
-// Should you need a space, use a hypen ( - ) instead.
     RED.nodes.registerType('ui_plotly-chart',{
-//*********************************************************************************
-//*********************************************************************************
-//                        !!!!!!!!!NOTE!!!!!!!!!
-// The following lines will determine your node's configuration and parameters.
-//
-//*********************************************************************************
-//*********************************************************************************
-// !!REQUIRED!!
-//
-// Node Category
-//
-// The category value should be left as 'dashboard', it does not need to be changed.
         category: 'dashboard',
-//*********************************************************************************
-//*********************************************************************************
-// !!REQUIRED!!
-//
-// Node Color
-//
-// The color value determines what color your node will be in the flow editor.
-// Typically, all UI Nodes are rgb( 63, 173, 181), but you can freely edit this if
-// you prefer a different color.
-// TODO what about the preferred colors (https://nodered.org/docs/creating-nodes/appearance#background-colour)?
-// Please use the rgb format only.
         color: 'rgb( 63, 173, 181)',
-//*********************************************************************************
-//*********************************************************************************
-//                        !!!!!!!!!NOTE!!!!!!!!!
-// In the following lines all the node properties are defined.  For every property you
-// can (optionally) specify a default value and whether the value is required or not.
-// When the standard 'required' is not sufficient, a custom validator function can be added.
-// Only properties in this 'defaults' list will be remembered in time.
-//
-// The first 5 properties are required in all ui nodes.
-//
-//*********************************************************************************
-// !!REQUIRED!!
-//
-// Node Default Settings
-//
         defaults: {
-//*********************************************************************************
-//*********************************************************************************
-// !!REQUIRED!!
-//
-// Node Group
-//
-// The group value should be left as {type: 'ui_group', required:true}
-// There is no need to edit this line.
             group: {type: 'ui_group', required:true},
-//*********************************************************************************
-//*********************************************************************************
-// !!REQUIRED!!
-//
-// Node Order
-//
-// The order value should be left as {value: 0}
-// There is no need to edit this line.
             order: {value: 0},
-//*********************************************************************************
-//*********************************************************************************
-// !!REQUIRED!!
-//
-// Node Width
-//
-// Sets the default width of your node and how wide it will appear on the dashboard.
-// This setting is set from the Size setting in the node editor, within in the flow editor.
-// There is no need to edit these lines.
             width: {
                 value: 0,
                 validate: function(v) {
@@ -117,238 +29,382 @@
                     $("#node-input-size").toggleClass("input-error",!valid);
                     return valid;
                 }},
-//*********************************************************************************
-//*********************************************************************************
-// !!REQUIRED!!
-//
-// Node Height
-//
-// Sets the default height of your node and how tall it will appear on the dashboard.
-// This setting is set from the Size setting in the node editor, within the flow editor.
-// There is no need to edit this line.
             height: {value: 0},
-//*********************************************************************************
-//*********************************************************************************
-// !!REQUIRED!!
-//
-// Node Name
-//
-// Sets the default name of the node in the node editor.
-// Typically, this is left as {value:''}, and gives the user the option to enter
-// a name if they choose to do so.
-// There is no need to edit this line.
             name: {value: ''},
-//*********************************************************************************
-//*********************************************************************************
-//                        !!!!!!!!!NOTE!!!!!!!!!
-// Until here we have covered the required default values every ui node must have,
-// and now we will start adding our own custom properties for our node.
-// For instance, you may want to set a default text color or some other custom property.
-// It is advised to specify a default value for as much properties as possible, to make sure
-// that users can setup your node up quick and easy.
-// Remember to place a comma at the end of each line of default values, except after the last line!
-// For example:
-// property1: {value: True}, <--comma
-// property2: {value: 'black'}, <--comma
-// property2: {value: ('2B' || NOT('2B')) }  <--NO comma
-// },
-//
-//********************************************************************************* BEGIN USER DEFINED DEFAULT VALUES
-            textLabel: {value:'Plotly Chart'},
-            textColor: {value:'#000000'}
+            chartTitle: {value:''},
+            xAxisTitle: {value:''},
+            xAxisType: {value:'date'},
+            yAxisTitle: {value:''},
+            yAxisType: {value:'date'},
+            traces: {value: []}
         },
-//********************************************************************************* END USER DEFINED DEFAULT VALUES
-//*********************************************************************************
-// !!REQUIRED!!
-//
-// Inputs & Outputs
-//
-// The default number of inputs (0or1) and outputs (0-n) are set here.
         inputs:1,
         outputs:1,
-//*********************************************************************************
-//*********************************************************************************
-// !!REQUIRED!!
-//
-// Node Icon
-//
-// The default icon to display on your node in the flow editor. You may use any of
-// the icons found here: (TODO: Verify path to icon files with team.)
-        icon: "cog.png",
-//*********************************************************************************
-//*********************************************************************************
-// !!REQUIRED!!
-//
-// Node Name
-//
-// The name of your node as it would appear in the node selection side bar.
-// Lowercase & spaces are only permitted here.
-
+        icon: "font-awesome/fa-area-chart", 
         paletteLabel:"Plotly Chart",
-
-//*********************************************************************************
-// !!REQUIRED!!
-//
-// Node Label
-//
-// The default label that will be displayed on your node in the flow editor.
-// Typically, set this to the same name of your node.
-// Spaces are permitted.
         label: function() {
             return this.name||"Plotly Chart";
         },
         labelStyle: function() {
             return this.name?"node_label_italic":"";
         },
-//*********************************************************************************
-//*********************************************************************************
-// !!REQUIRED!!
-//
-// Node Edit Preparation
-//
-// While editing your node in the node editor within the flow editor, you may need
-// to perform some functions to verify the proper settings and syntax have been set.
-//
-// TODO: Verify with team on what this actually does.
-// Typically, you will not need to edit the oneditprepare.
-// You must atleast have your oneditprepare as such:
-//    oneditprepare: function() {
-//            $("#node-input-size").elementSizer({
-//               width: "#node-input-width",
-//                height: "#node-input-height",
-//                group: "#node-input-group"
-//            });
-//        }
-//
         oneditprepare: function() {
+            function addPropertyRow(container, propertyName) {
+                var propertyRow = $('<div/>',{style:"margin-top:8px;"}).appendTo(container);
+                $('<div/>', {style:"display:inline-block;text-align:right; width:120px; padding-right:10px; box-sizing:border-box;"})
+                .text(propertyName)
+                .appendTo(propertyRow);
+                
+                return propertyRow;
+            }
+            
+            function updateTitle(titleField, nameField, typeField) {
+                // Get the text label of the selected type (not the selected value itself)
+                var type = typeField[0].options[typeField[0].selectedIndex].innerHTML;
+                
+                var name = nameField[0].value;
+                if (!name || name === "") {
+                    name = "Unknown";
+                }
+                
+                titleField.text('Trace "' + name + '" (type ' + type + ')');
+            }
+            
+            function showHideRows(expandIcon, headerRow) {
+                if (expandIcon === "fa fa-angle-right") {
+                    display = "none";
+                }
+                else {
+                    display = "block";
+                }
+                
+                // Show or hide all property rows.  Note that the property rows are at the same level as the header row,
+                // so it are sibblings of the header row:
+                //    container
+                //       - header row
+                //       - property row 1 (e.g. trace type)
+                //       - property row 2 (e.g. trace name)
+                //       - ...
+                var propertyRows = headerRow.siblings();
+                for (var i = 0; i < propertyRows.length; i++) {
+                    propertyRows[i].style.display = display;
+                }
+            }
+
+            var node = this;
+        
+            // Show a popup when the size element is being clicked
             $("#node-input-size").elementSizer({
                 width: "#node-input-width",
                 height: "#node-input-height",
                 group: "#node-input-group"
             });
-        }
+            
+            //$('#node-input-array').val(node.array);
+            
+            // Show an editable list with all traces
+            var tracesEditableList = $("#node-input-traces-container").css('min-height','250px').css('min-width','450px').editableList({
+                addItem: function(container,i,trace) {
+                    container.css({
+                        overflow: 'hidden',
+                        whiteSpace: 'nowrap'
+                    });
+                    
+                    // By default the list items will be compressed, so show the expand icon
+                    var expandIcon = "fa fa-angle-right";
+                    
+                    // When trace === {} then we have a new list item (i.e. user pressed the addItem button)
+                    if (Object.keys(trace).length === 0) {
+                        // Initialize new items in the list.
+                        trace = {
+                            name : "",
+                            type : "scatter"
+                        };
+                        
+                        // New list items should be expanded by default, so show a compress icon.
+                        // This way the user becomes aware which properties the new widget offers...
+                        expandIcon = "fa fa-angle-down";
+                    }
+                    
+                    var headerRow = $('<div/>').appendTo(container);
+                    
+                    // Show a click-able expand/compress icon before each header row.
+                    var expandButton = $('<span/>', {style: "margin-left:5px; margin-right:10px;"}).html('<i class="' + expandIcon + '"></i>').appendTo(headerRow);
+                    
+                    // Show a title for each row, in a format like this: Trace "<someTraceName>" (type "<someTraceType>")
+                    var titleField = $('<span/>', {style: "margin-left:10px; margin-right:10px; font-weight:Bold"}).appendTo(headerRow);
+                    titleField.click(function(evt){
+                        expandButton.trigger( "click" )
+                    })
+                    
+                    // Add a new row with a text field, that represents the trace name
+                    var nameRow = addPropertyRow(container, "Name");
+                    var nameField = $('<input/>',{class:"node-input-trace-name",type:"text",placeholder:"Trace name",style:"width:180px; margin-right:10px;"}).appendTo(nameRow);
+                    $('<span/>').text('%').appendTo(nameField);
+                    
+                     // Add a new row with a dropdown, that represents the trace type
+                    var typeRow = addPropertyRow(container, "Type");
+                    var typeField = $('<select/>',{class:"node-input-trace-type",type:"text",style:"width:180px; margin-right:10px;"}).appendTo(typeRow);
+                    $('<span/>').text('%').appendTo(typeField);
+                    
+                    // Update the title both on 'input' (i.e. immediately when a character of the name is entered) and on 'change', which is
+                    // being triggered when the config screen is being loaded at the start.
+                    nameField.on("input change", function() {
+                        // When a new name is entered, show it in the title
+                        updateTitle(titleField, nameField, typeField);
+                    });
+                    
+                    typeField.on("change", function() {
+                        // When a new trace type is selected, show the selected option text in the title
+                        updateTitle(titleField, nameField, typeField);
+                        
+                        // Remove all previous specific lines, that did belong to another type
+                        var specificFields = container.find('[class^="node-input-trace"]')
+                        specificFields.each(function(i) {
+                            var trace = $(this)[0];
+                            // Keep the trace name and type, and only remove the type-dependent trace properties
+                            if (trace.className !== "node-input-trace-name" && trace.className !== "node-input-trace-type") {
+                                // Note that we need to remove the parent ROW, not only the input element itself
+                                trace.parentElement.remove();
+                            }
+                        });
+                        
+                        // When a new trace type is selected, show the input fields that are type-dependent
+                        switch(this.value) {
+                            case "scatter":
+                                var lineColorRow = addPropertyRow(container, "Line color");
+                                var lineColorField = $('<input/>',{class:"node-input-trace-line-color",type:"color",style:"width:180px; margin-right:10px;"}).appendTo(lineColorRow);
+                                $('<span/>').text('%').appendTo(lineColorField);
+                                
+                                var modeRow = addPropertyRow(container, "Mode");
+                                var modeField = $('<select/>',{class:"node-input-trace-mode",type:"color",style:"width:180px; margin-right:10px;"}).appendTo(modeRow);
+                                // See options on https://plotly.com/python/reference/scatter/#scatter-mode
+                                modeField.append($('<option>', {value: "lines"          ,text: 'Lines'}));
+                                modeField.append($('<option>', {value: "markers"        ,text: 'Markers'}));
+                                modeField.append($('<option>', {value: "lines+markers"  ,text: 'Lines and markers'}));
+                                $('<span/>').text('%').appendTo(lineColorField);
+                                break;
+                            case "bar":
+                                var markerColorRow = addPropertyRow(container, "Marker color");
+                                var markerColorField = $('<input/>',{class:"node-input-trace-marker-color",type:"color",style:"width:180px; margin-right:10px;"}).appendTo(markerColorRow);
+                                $('<span/>').text('%').appendTo(markerColorField);
+                                break;
+                        }
+                    });
+                    
+                    // Fill the 'trace type' dropdown with all available types, grouped by category (optgroups):
+                    var simpleTypes = typeField.append($('<optgroup>', {label: "*** Simple ***", style: "font-weight: bold;" }));
+                    simpleTypes.append($('<option>', {value: "scatter"    ,text: 'Scatter'}));
+                    simpleTypes.append($('<option>', {value: "scattergl"  ,text: 'Scatter GL'}));
+                    simpleTypes.append($('<option>', {value: "bar"        ,text: 'Bar'}));
+                    simpleTypes.append($('<option>', {value: "pie"        ,text: 'Pie'}));
+                    simpleTypes.append($('<option>', {value: "heatmap"    ,text: 'Heatmap'}));
+                    simpleTypes.append($('<option>', {value: "heatmapgl"  ,text: 'Heatmap GL'}));
+                    simpleTypes.append($('<option>', {value: "image"      ,text: 'Image'}));
+                    simpleTypes.append($('<option>', {value: "contour"    ,text: 'Contour'}));
+                    simpleTypes.append($('<option>', {value: "table"      ,text: 'Table'}));
+                    
+                    var distributionTypes = typeField.append($('<optgroup>', {label: "*** Distribution ***"}));
+                    distributionTypes.append($('<option>', {value: "box"                 ,text: 'Box'}));
+                    distributionTypes.append($('<option>', {value: "violin"              ,text: 'Violin'}));
+                    distributionTypes.append($('<option>', {value: "histogram"           ,text: 'Histogram'}));
+                    distributionTypes.append($('<option>', {value: "histogram2d"         ,text: 'Histogram 2D'}));
+                    distributionTypes.append($('<option>', {value: "histogram2dcontour"  ,text: 'Histogram 2D Contour'}));
+                    
+                    var financeTypes = typeField.append($('<optgroup>', {label: "*** Finance ***"}));
+                    financeTypes.append($('<option>', {value: "ohlc"         ,text: 'OHLC'}));
+                    financeTypes.append($('<option>', {value: "candlestick"  ,text: 'Candlestick'}));
+                    financeTypes.append($('<option>', {value: "waterfall"    ,text: 'Waterfall'}));
+                    financeTypes.append($('<option>', {value: "funnel"       ,text: 'Funnel'}));
+                    financeTypes.append($('<option>', {value: "funnelarea"   ,text: 'Funnel Area'}));
+                    financeTypes.append($('<option>', {value: "indicator"    ,text: 'Indicator'}));
+                    
+                    var threeDTypes = typeField.append($('<optgroup>', {label: "*** 3D ***"}));
+                    threeDTypes.append($('<option>', {value: "scatter3d"   ,text: 'Scatter 3D'}));
+                    threeDTypes.append($('<option>', {value: "surface"     ,text: 'Surface'}));
+                    threeDTypes.append($('<option>', {value: "mesh3d"      ,text: 'Mesh'}));
+                    threeDTypes.append($('<option>', {value: "cone"        ,text: 'Cone'}));
+                    threeDTypes.append($('<option>', {value: "streamtube"  ,text: 'Streamtube'}));
+                    threeDTypes.append($('<option>', {value: "volume"      ,text: 'Volume'}));
+                    threeDTypes.append($('<option>', {value: "isosurface"  ,text: 'Isosurface'}));
+
+                    var mapsTypes = typeField.append($('<optgroup>', {label: "*** Maps ***"}));
+                    mapsTypes.append($('<option>', {value: "scattergeo"        ,text: 'Scatter Geo'}));                  
+                    mapsTypes.append($('<option>', {value: "choropleth"        ,text: 'Choropleth'}));                  
+                    mapsTypes.append($('<option>', {value: "scattermapbox"     ,text: 'Scatter Mapbox'}));                  
+                    mapsTypes.append($('<option>', {value: "choroplethmapbox"  ,text: 'Choropleth Mapbox'}));                  
+                    mapsTypes.append($('<option>', {value: "densitymapbox"     ,text: 'Density Mapbox'}));   
+
+                    var specializedTypes = typeField.append($('<optgroup>', {label: "*** Specialized ***"}));
+                    specializedTypes.append($('<option>', {value: "scatterpolar"    ,text: 'Scatter Polar'}));                  
+                    specializedTypes.append($('<option>', {value: "scatterpolargl"  ,text: 'Scatter Polar GL'}));                  
+                    specializedTypes.append($('<option>', {value: "barpolar"        ,text: 'Bar Polar'}));                  
+                    specializedTypes.append($('<option>', {value: "scatterternary"  ,text: 'Scatter Ternary'}));                  
+                    specializedTypes.append($('<option>', {value: "sunburst"        ,text: 'Sunburst'}));                  
+                    specializedTypes.append($('<option>', {value: "treemap"         ,text: 'Treemap'}));                  
+                    specializedTypes.append($('<option>', {value: "sankey"          ,text: 'Sankey'}));                  
+                    specializedTypes.append($('<option>', {value: "parcoords"       ,text: 'Parallel Coordinates'}));                  
+                    specializedTypes.append($('<option>', {value: "carpet"          ,text: 'Parallel Categories'}));                  
+                    specializedTypes.append($('<option>', {value: "scattercarpet"   ,text: 'Scatter Carpet'}));                  
+                    specializedTypes.append($('<option>', {value: "contourcarpet"   ,text: 'Contour Carpet'}));
+                    
+                    // Make sure the typeField change listener is called, after we have set the typeField value.
+                    // This should be done before the other property values are applied below, because in the handler all those input fields will be created!!!
+                    typeField.val(trace["type"]);
+                    typeField.change();
+                    
+                    // Set the values of all the trace properties that are stored in this node.  E.g. when the trace looks like this:
+                    // var trace = {
+                    //      marker_color: "xxx"
+                    // }
+                    // Then the field with class 'node-input-trace-marker-color' should get this value 'xxx'
+                    var propertyNames = Object.keys(trace);
+                    for (var i = 0; i < propertyNames.length; i++) {
+                        var propertyName = propertyNames[i];
+                        var className = "node-input-trace-" + propertyName.replace("_", "-");
+                        var inputFields = container[0].getElementsByClassName(className);
+                        
+                        if (inputFields.length !== 1) {
+                            console.log("Per trace there should be only one field with class " + className);
+                            continue;
+                        }
+                        
+                        var propertyValue = trace[propertyName];
+                        inputFields[0].value = propertyValue;
+                    }
+                    
+                    // Make sure the title will be updated with the loaded name (in the above code snippet)
+                    nameField.change();
+                    
+                    expandButton.click(function(e) {
+                        e.preventDefault();
+
+                        // Switch the icon between expand and compress
+                        if (this.firstElementChild.className === "fa fa-angle-right") {
+                            this.firstElementChild.className = "fa fa-angle-down";
+                        }
+                        else {
+                            this.firstElementChild.className = "fa fa-angle-right";
+                        }
+                        
+                        showHideRows(this.firstElementChild.className, headerRow);
+                    });
+                    
+                    // Make sure that the elements will be hidden/showed also when a row is added
+                    showHideRows(expandIcon, headerRow);
+                },
+                removable: true,
+                sortable: true
+            });
+            
+            // Show all the traces from the node in the html table
+            if (node.traces) {
+                for (var i = 0; i < node.traces.length; i++) {
+                    tracesEditableList.editableList('addItem', node.traces[i]);
+                }
+            }
+        },
+        oneditsave: function() {
+            var node = this;
+            node.traces = [];
+
+            // Copy all the traces from the html table to the node
+            var tracesList = $("#node-input-traces-container").editableList('items');
+            tracesList.each(function(i) {
+                var trace = {};
+                var row = $(this);
+                
+                // For every trace we store all the properties like this: e.g. field with CSS class node-input-trace-marker-color and value xxx
+                // will be stored as (since '-' is not allowed in property names, so we replace it by '_'):
+                // var trace = {
+                //      marker_color: "xxx"
+                // }
+                var traceProperties = row.find('[class^="node-input-trace"]');
+                traceProperties.each(function(i) {
+                    var traceProperty = $(this)[0];
+                    
+                    var key = traceProperty.className.replace("node-input-trace-", "").replace("-", "_");
+                    var value = traceProperty.value;
+                    trace[key] = value;
+                });
+                
+                node.traces.push(trace);
+            });
+        },
     });
 </script>
 
-
-<!--
-***********************************************************************************
-** The following section creates the content of your node's config screen (to visualise
-** the node properties), which is displayed when you double click your node in the flow
-** editor.  The config screen contains both the required widgets (group dropdown, size
-** selector, name text box) and widgets to visualise your own custom properties (see
-** User Defined Default Values section above).
-***********************************************************************************
--->
-
-<!--
-***********************************************************************************
-** This setion must begin with:
-** <script type="text/html" data-template-name="ui_yournodenamehere">
-** It should be the same name that you are registering with Node-RED (see line #26).
-***********************************************************************************
--->
 <script type="text/html" data-template-name="ui_plotly-chart">
-    <!--***************************************************************************
-    ** !!REQUIRED!!
-    **
-    ** Group Dropdown
-    **
-    ** These lines of HTML code will define how the Group dropdown selector looks.
-    ** It is best that this stays as it is so that it is the same across all of the
-    ** nodes.
-    ** There is no need to edit these lines.
-    *******************************************************************************-->
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    
     <div class="form-row" id="template-row-group">
         <label for="node-input-group"><i class="fa fa-table"></i> Group</span></label>
         <input type="text" id="node-input-group">
     </div>
-    <!--***************************************************************************-->
-    <!--***************************************************************************
-    ** !!REQUIRED!!
-    **
-    ** Size Selector
-    **
-    ** The following lines will define how the Size Selector looks.
-    ** It is best that this stays as it is so that it is the same across all of the
-    ** nodes.
-    ** There is no need to edit these lines.
-    *******************************************************************************-->
-
+    
     <div class="form-row" id="template-row-size">
         <label><i class="fa fa-object-group"></i> Size</span></label>
         <input type="hidden" id="node-input-width">
         <input type="hidden" id="node-input-height">
         <button class="editor-button" id="node-input-size"></button>
     </div>
-    <!--***************************************************************************
-    **                              !!!!!NOTE!!!!!
-    ** The </br> tag will skip a line leaving a horizontal space. Use this to space
-    ** out your confiuration inputs into groups. Still, it is totally your preference.
-    ** The following </br> will seperate the Group dropdown and Size Selector from the
-    ** rest of our configuration.
-    *******************************************************************************-->
-
+    
     </br>
-    <!--***************************************************************************
-    **                             !!!!!!!!!NOTE!!!!!!!!!
-    **
-    ** Html elements to visualise our own custom node properties.
-    **
-    ** Here we will reference visualise the properties in the 'default' list (see lines #152 & #153):
-    ** textColor & textLabel
-    ** The id's of the html elements must EXACTLY match the names in the 'default' list, to make
-    ** sure that the html elements are automatically linked to the values of the properties in the
-    ** 'default' list.  For example the html id 'node-input-textColor' is linked to property 'textColor'.
-    **
-    ** A line like <label for="node-input-textColor"> simply defines a textual label for the html
-    ** input element with the correspoding id: <input type="text" id="node-input-textColor">
-    **
-    ** You may use any of the FontAwesome v4 icons, here: https://fontawesome.com/v4.7.0/icons/
-    **
-    ** The input 'type' specifies which kind of data is allowed in the input element.
-    ** For example type="color" means that the user can only enter color values (via a color picker).
-    ** Check here for a full list: https://www.w3schools.com/tags/att_input_type.asp
-    ******************************************************************************** BEGIN USER DEFINED DEFAULT INPUTS -->
-
+    
     <div class="form-row">
-        <label for="node-input-textColor"><i class="fa fa-paint-brush"></i> Text Color</span></label>
-        <input type="color" id="node-input-textColor"/>
+        <label for="node-input-chartTitle "><i class="fa fa-font"></i> Chart title</label>
+        <input type="text" id="node-input-chartTitle" placeholder="Graph title">
     </div>
+    
     <div class="form-row">
-        <label for="node-input-textLabel"><i class="fa fa-i-cursor"></i> Text Label</span></label>
-        <input type="text" id="node-input-textLabel"/>
+        <label for="node-input-xAxisTitle "><i class="fa fa-text-width"></i> Title X-axis</label>
+        <input type="text" id="node-input-xAxisTitle" placeholder="X-axis title">
     </div>
-    <!--**************************************************************************** END USER DEFINED DEFAULT INPUTS -->
-</br>
-<!--********************************************************************************
-** !!REQUIRED!!
-**
-** Node Name Input
-**
-** This is where the user can enter a name for the node.
-** There is no need to edit these lines.
-************************************************************************************-->
+    
     <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
+        <!-- https://plotly.com/python/reference/#layout-xaxis -->
+        <label for="node-input-xAxisType"><i class="fa fa-arrows-h"></i> Type X-axis</label>
+        <select id="node-input-xAxisType">
+            <option value="-">Automatic</option>
+            <option value="linear">Linear</option>
+            <option value="log">Log</option>
+            <option value="date">Date</option> 
+            <option value="category">Category</option>
+            <option value="multicategory">Multi category</option>
+        </select>
+    </div>
+    
+    <div class="form-row">
+        <label for="node-input-yAxisTitle "><i class="fa fa-text-height"></i> Title Y-axis</label>
+        <input type="text" id="node-input-yAxisTitle" placeholder="Y-axis title">
+    </div>
+    
+    <div class="form-row">
+        <!-- https://plotly.com/python/reference/#layout-yaxis -->
+        <label for="node-input-yAxisType"><i class="fa fa-arrows-v"></i> Type Y-axis</label>
+        <select id="node-input-yAxisType">
+            <option value="-">Automatic</option>
+            <option value="linear">Linear</option>
+            <option value="log">Log</option>
+            <option value="date">Date</option> 
+            <option value="category">Category</option>
+            <option value="multicategory">Multi category</option>
+        </select>
+    </div>
+    
+    <div class="form-row node-input-array-container-row" style="margin-bottom:0;">
+        <label><i class="fa fa-line-chart"></i> Traces:</label>
+    </div>
+    
+    <div class="form-row node-input-traces-container-row">
+        <!-- Container element where the editableList of traces will be displayed -->
+        <ol id="node-input-traces-container"></ol>
     </div>
 </script>
-<!--
-************************************************************************************
-** This next section is where you can write a little info on how your node operates.
-** This info will be available in the right side bar when the user clicks on the node,
-** and clicks on the info tab.
-** We ask that you always enter something here to help other users become familiar
-** with your node and know how to interface with it.
-** HTML code must be used.
-** The data-help-name must be the same name as you have registered this node with.
-**
-** This setion must begin with:
-** <script type="text/html" data-template-name="ui_yournodenamehere">
-** It should be the same name that you are registering with Node-RED (see line #26).
-************************************************************************************
--->
+
 <script type="text/html" data-help-name="ui_plotly-chart">
     <p>A Node-RED dashboard ui node to display text with a defined color on the dashboard.</p>
     <p>Use this node as a template for building your own ui node.</p>
