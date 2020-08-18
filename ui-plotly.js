@@ -35,7 +35,7 @@ module.exports = function(RED) {
         var configAsJson = JSON.stringify(config);
 
         var html = String.raw`
-        <div id='plotlychart_` + config.id + `' ng-init='init(` + configAsJson + `)'>
+	  <div id='plotlychart_` + config.id + `' style="width:100%; height:100%;" ng-init='init(` + configAsJson + `)'>
         `;
         return html;
     }
