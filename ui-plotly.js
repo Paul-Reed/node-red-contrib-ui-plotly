@@ -56,9 +56,12 @@ module.exports = function(RED) {
             if(ui === undefined) {
                 ui = RED.require("node-red-dashboard")(RED);
             }
-            RED.nodes.createNode(this, config);
 
+            RED.nodes.createNode(this, config);
             if (checkConfig(node, config)) {
+
+		var ui = RED.require('node-red-dashboard')(RED);
+		var sizes = ui.getSizes();
                 var html = HTML(config);
                 var done = ui.addWidget({
                     node: node,
@@ -117,6 +120,12 @@ module.exports = function(RED) {
                             //      }
                             // }]
                             // Which means that the underscores will result in nested properties ...
+		           
+			    // Get size, padding, etc of widgets & group, so chart plot fits group
+ 				var plot_padding = 2;
+				var plot_size_x  = (((config.width*sizes.sx)+((config.width -1)*sizes.cx))-(sizes.gx + (plot_padding*2)));
+ 				var plot_size_y  = (((config.height*sizes.sy)+((config.height -1)*sizes.cy))-(sizes.gy + (plot_padding*2)));
+ 
                             for(var m = 0; m < config.traces.length; m++) {
                                 var configTrace = config.traces[m];
                                 var keys = Object.keys(configTrace);
@@ -126,7 +135,7 @@ module.exports = function(RED) {
                                     x: [timestamp],
                                     y: [0]
                                 }
-                                
+
                                 for (var j = 0; j < keys.length; j++) {
                                     var key = keys[j];
                                     var obj = nodeTrace;
@@ -159,7 +168,16 @@ module.exports = function(RED) {
                                     titlefont: {
                                         size: 22,
                                         },
-                                    autosize: true,
+                                    autosize: false,
+				    width: plot_size_x,
+				    height: plot_size_y,
+				     margin: {
+   					l: 60,
+					r: 50,
+					b: 60,
+					t: 50,
+					pad: plot_padding
+					},
                             }
                             
                             $scope.configuration = {
