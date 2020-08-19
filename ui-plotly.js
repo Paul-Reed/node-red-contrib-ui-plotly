@@ -121,10 +121,10 @@ module.exports = function(RED) {
                             // }]
                             // Which means that the underscores will result in nested properties ...
 		           
-			    // Get size, padding, etc of widgets & group, so chart plot fits group
- 				var plot_padding = 2;
-				var plot_size_x  = (((config.width*sizes.sx)+((config.width -1)*sizes.cx))-(sizes.gx + (plot_padding*2)));
- 				var plot_size_y  = (((config.height*sizes.sy)+((config.height -1)*sizes.cy))-(sizes.gy + (plot_padding*2)));
+                            // Get size, padding, etc of widgets & group, so chart plot fits group
+			    // Additional 13px & 8px deducted because of default widget padding
+				var plot_size_x  = (((config.width*sizes.sx)+((config.width -1)*sizes.cx))-13);
+				var plot_size_y  = (((config.height*sizes.sy)+((config.height -1)*sizes.cy))-8);
  
                             for(var m = 0; m < config.traces.length; m++) {
                                 var configTrace = config.traces[m];
@@ -165,19 +165,19 @@ module.exports = function(RED) {
                                     "yaxis": {
                                         "title": config.yAxisTitle
                                     },
-                                    titlefont: {
-                                        size: 22,
+                                     titlefont: {
+                                        size: 20,
                                         },
                                     autosize: false,
-				    width: plot_size_x,
-				    height: plot_size_y,
-				     margin: {
-   					l: 60,
-					r: 50,
-					b: 60,
-					t: 50,
-					pad: plot_padding
-					},
+                                    width: plot_size_x,
+                                    height: plot_size_y,
+                                    margin: {
+                                        l: 60,
+                                        r: 50,
+                                        b: 60,
+                                        t: 50,
+                                        pad: 0
+                                        },
                             }
                             
                             $scope.configuration = {
