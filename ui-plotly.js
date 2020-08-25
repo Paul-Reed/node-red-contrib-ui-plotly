@@ -157,17 +157,23 @@ module.exports = function(RED) {
                             // Convert the graph configuration to a Plotly format
                             // TODO what with yAxisType?  In paul his example there was also not that one ...
                             $scope.chart = {
-                                    title: config.chartTitle,
+                                    "title": {
+                                        "text": config.chartTitle,
+                                        "font": {
+                                                "size": 20
+                                                }
+                                    },
                                     "xaxis": {
-                                        "title": config.xAxisTitle,
-                                        "type": config.xAxisType,
+                                        "title": {
+                                          "text": config.xAxisTitle
+                                                 },
+                                        "type": config.xAxisType
                                     },
                                     "yaxis": {
-                                        "title": config.yAxisTitle
+                                        "title": {
+                                          "text": config.yAxisTitle
+                                                  }
                                     },
-                                     titlefont: {
-                                        size: 20,
-                                        },
                                     autosize: false,
                                     width: plot_size_x,
                                     height: plot_size_y,
