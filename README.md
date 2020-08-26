@@ -33,7 +33,7 @@ A node-RED contrib node to deliver Plotly charts
 - [ ] Make sure the editableLists always expand to the full available area's.  See updateEditorHeight(node,node.editor)
 - [ ] What to do with the yAxisType?
 - [ ] Some traces hav not only "attributes" but also "layoutAttributes".  What to do with those?
-- [ ] Disable "properties" tabsheet, when no traces are availalbe
-- [ ] Disable "items" tabsheet, when no arrays are availalbe
+- [X] Disable "properties" tabsheet, when no traces are availalbe
+- [X] Disable "items" tabsheet, when no arrays are availalbe
 - [ ] Which step size do we need to specify on input of type "number" and "angle"?
 - [ ] When a tabsheet opens, set the focus on a field.
