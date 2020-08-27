@@ -6,7 +6,7 @@ A node-RED contrib node to deliver Plotly charts
 
 ## TODO's
 - [ ] Support build-in colorscales https://plotly.com/python/builtin-colorscales/
-- [ ] Create endpoint to allow a "Validate" button in the config screen
+- [ ] Create endpoint to allow a "Validate" button in the config screen.  Question: is valdidation of layout possible in flow editor, or do we need to do it in the dashboard (because the valdate method both needs data and layout ...)??
 - [ ] Pass the selected array to Plotly
 - [ ] What to do with the `any` data type?
 - [ ] Add validation of arrays (based on the array type)
@@ -36,4 +36,6 @@ A node-RED contrib node to deliver Plotly charts
 - [X] Disable "properties" tabsheet, when no traces are availalbe
 - [X] Disable "items" tabsheet, when no arrays are availalbe
 - [ ] Which step size do we need to specify on input of type "number" and "angle"?
-- [ ] When a tabsheet opens, set the focus on a field.
+- [X] When a tabsheet opens, set the focus on a field.
+- [ ] Convert the first tabsheet "Graph" to an editableList.
+- [ ] When one of the validation fails, the node should get a red triangle in the flow editor.
