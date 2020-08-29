@@ -32,12 +32,32 @@ A node-RED contrib node to deliver Plotly charts
    Should there be an option in trace config to add a trace to either the x or y axis (there would only be 1 x-axis)
 - [ ] Fix header lines on the editableLists: they need to be properly aligned with the columns below, even when the config screen is resized.
 - [ ] Make sure the editableLists always expand to the full available area's.  See updateEditorHeight(node,node.editor)
-- [ ] What to do with the yAxisType?
-- [ ] Some traces hav not only "attributes" but also "layoutAttributes".  What to do with those?
+- [X] What to do with the yAxisType?  --> Solved since the first tabsheet contains now an editableList
 - [X] Disable "properties" tabsheet, when no traces are availalbe
 - [X] Disable "items" tabsheet, when no arrays are availalbe
 - [ ] Which step size do we need to specify on input of type "number" and "angle"?
 - [X] When a tabsheet opens, set the focus on a field.
-- [ ] Convert the first tabsheet "Graph" to an editableList.
+- [X] Convert the first tabsheet "Graph" to an editableList.
 - [X] When one of the validation fails, the node should get a red triangle in the flow editor.
-- [ ] Add Plotly validation in the beforeEmit
+- [ ] Add Plotly validation in the dashboard:
+   + Validate the layout (in the init)
+     ```
+     var out = Plotly.validate($scope.traces, $scope.chart);
+     if (out) {
+        console.log(out[0].msg);
+     } else {
+        console.log("OK");
+     }
+     ```
+     But we should get this error to the server...  Although then we get N duplicate messages, when N dashboards are open simultaneously.  Note that we cannot move this validation to the server (i.e. `beforeEmit`) because Plotly doesn't work in NodeJS...
+   + Validate the data (in the msg watch):
+     ```
+     var out = Plotly.validate([{x: xVal,y: y}]);
+     if (out) {
+        console.log("Plotly data validation - "+(out[0].msg));
+     };
+     ```
+- [ ] Rename the first tabsheet to "Layout" (and also all related variables in the code)
+- [ ] When generating the input for Plotly (on the server-side), the names of the arrays should be replaced by the content of the arrays  --> not sure how to find the link between both ...
+- [ ] The `marker.symbol` property has a dropdown with both numeric and string values, since plotly offers two ways to enter symbols (e.g. "0" = "circle").  Not sure how to get rid of the numbers, because other `values` lists in the scheme.json file don't use both numbers and strings ...
+- What to do with _deprecated properties in the json scheme?  Suppose somebody has used property `A.B.C.D` which in a new version becomes `A.B.C._deprecated.D` then he will get an error (red border) because property `A.B.C.D` doesn't exist anymore. But there will be no link to the new `A.B.C._deprecated.D`. Would have been better if they had added a property `deprecated:true` to the existing property...
