@@ -6,8 +6,8 @@ A node-RED contrib node to deliver Plotly charts
 
 ## TODO's
 - [ ] Support build-in colorscales https://plotly.com/python/builtin-colorscales/ & https://plotly.com/javascript/colorscales/
-- [ ] Create endpoint to allow a "Validate" button in the config screen.  Question: is valdidation of layout possible in flow editor, or do we need to do it in the dashboard (because the valdate method both needs data and layout ...)??
-- [ ] Button to show the generated json in a popup???
+- [X] Create endpoint to allow a "Validate" button in the config screen.  Question: is valdidation of layout possible in flow editor, or do we need to do it in the dashboard (because the valdate method both needs data and layout ...)??
+- [X] Button to show the generated json in a popup???
 - [ ] Pass the selected array to Plotly
 - [ ] What to do with the `any` data type?
 - [ ] Add validation of arrays (based on the array type)
@@ -30,7 +30,7 @@ A node-RED contrib node to deliver Plotly charts
    }
    ```
    Should there be an option in trace config to add a trace to either the x or y axis (there would only be 1 x-axis)
-- [ ] Fix header lines on the editableLists: they need to be properly aligned with the columns below, even when the config screen is resized.
+- [ ] Fix header lines on the editableLists: they need to be properly aligned with the columns below, even when the config screen is resized. See this [discussion](https://discourse.nodered.org/t/alignment-of-headers-in-editablelist/32071)
 - [ ] Make sure the editableLists always expand to the full available area's.  See updateEditorHeight(node,node.editor)
 - [X] What to do with the yAxisType?  --> Solved since the first tabsheet contains now an editableList
 - [X] Disable "properties" tabsheet, when no traces are availalbe
@@ -60,4 +60,4 @@ A node-RED contrib node to deliver Plotly charts
 - [ ] Rename the first tabsheet to "Layout" (and also all related variables in the code)
 - [ ] When generating the input for Plotly (on the server-side), the names of the arrays should be replaced by the content of the arrays  --> not sure how to find the link between both ...
 - [ ] The `marker.symbol` property has a dropdown with both numeric and string values, since plotly offers two ways to enter symbols (e.g. "0" = "circle").  Not sure how to get rid of the numbers, because other `values` lists in the scheme.json file don't use both numbers and strings ...
-- What to do with _deprecated properties in the json scheme?  Suppose somebody has used property `A.B.C.D` which in a new version becomes `A.B.C._deprecated.D` then he will get an error (red border) because property `A.B.C.D` doesn't exist anymore. But there will be no link to the new `A.B.C._deprecated.D`. Would have been better if they had added a property `deprecated:true` to the existing property...
+- [ ] What to do with _deprecated properties in the json scheme?  Suppose somebody has used property `A.B.C.D` which in a new version becomes `A.B.C._deprecated.D` then he will get an error (red border) because property `A.B.C.D` doesn't exist anymore. But there will be no link to the new `A.B.C._deprecated.D`. Would have been better if they had added a property `deprecated:true` to the existing property...
