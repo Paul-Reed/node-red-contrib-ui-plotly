@@ -3,7 +3,8 @@
   "version": "0.0.3",
   "description": "A Node-RED dashboard ui node to help you create your own ui node.",
   "dependencies": {
-       "plotly.js-dist-min": "^1.54.7"
+       "plotly.js-dist-min": "^1.54.7",
+       "jsdom": "^16.4.0"
     },
   "peerDependencies": {
       "node-red-dashboard": ">2.15.0"
