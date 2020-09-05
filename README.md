@@ -9,7 +9,7 @@ A node-RED contrib node to deliver Plotly charts
 - [X] Create endpoint to allow a "Validate" button in the config screen.  Question: is valdidation of layout possible in flow editor, or do we need to do it in the dashboard (because the valdate method both needs data and layout ...)??
 - [X] Button to show the generated json in a popup???
 - [ ] Pass the selected array to Plotly
-- [ ] What to do with the `any` data type?
+- [ ] What to do with the `any` data type?  No response yet on my [question](https://community.plotly.com/t/visualising-a-property-with-data-type-any/44343).
 - [ ] Add validation of arrays (based on the array type)
 - [ ] Solve error *"Indices must be valid indices for gd.data"*
 - [ ] Determine how  to pick which array (in the input message) contains the data for the x-axis. --> typedinput 'msg' or 'fixed' on the first tabsheet??
@@ -39,25 +39,9 @@ A node-RED contrib node to deliver Plotly charts
 - [X] When a tabsheet opens, set the focus on a field.
 - [X] Convert the first tabsheet "Graph" to an editableList.
 - [X] When one of the validation fails, the node should get a red triangle in the flow editor.
-- [ ] Add Plotly validation in the dashboard:
-   + Validate the layout (in the init)
-     ```
-     var out = Plotly.validate($scope.traces, $scope.chart);
-     if (out) {
-        console.log(out[0].msg);
-     } else {
-        console.log("OK");
-     }
-     ```
-     But we should get this error to the server...  Although then we get N duplicate messages, when N dashboards are open simultaneously.  Note that we cannot move this validation to the server (i.e. `beforeEmit`) because Plotly doesn't work in NodeJS...
-   + Validate the data (in the msg watch):
-     ```
-     var out = Plotly.validate([{x: xVal,y: y}]);
-     if (out) {
-        console.log("Plotly data validation - "+(out[0].msg));
-     };
-     ```
-- [ ] Rename the first tabsheet to "Layout" (and also all related variables in the code)
+- [X] Try to run Plotly via JSdom on the server side and execute validations there.
+- [ ] Add the ability to generate an output message containing the image as image.  For SVG see [here](https://gist.github.com/etpinard/58a9e054b9ca7c0ca4c39976fc8bbf8a)
+- [X] Rename the first tabsheet to "Layout" (and also all related variables in the code)
 - [ ] When generating the input for Plotly (on the server-side), the names of the arrays should be replaced by the content of the arrays  --> not sure how to find the link between both ...
 - [ ] The `marker.symbol` property has a dropdown with both numeric and string values, since plotly offers two ways to enter symbols (e.g. "0" = "circle").  Not sure how to get rid of the numbers, because other `values` lists in the scheme.json file don't use both numbers and strings ...
 - [ ] What to do with _deprecated properties in the json scheme?  Suppose somebody has used property `A.B.C.D` which in a new version becomes `A.B.C._deprecated.D` then he will get an error (red border) because property `A.B.C.D` doesn't exist anymore. But there will be no link to the new `A.B.C._deprecated.D`. Would have been better if they had added a property `deprecated:true` to the existing property...
