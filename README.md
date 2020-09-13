@@ -6,10 +6,9 @@ A node-RED contrib node to deliver Plotly charts
 
 ## TODO's
 - [ ] Support build-in colorscales https://plotly.com/python/builtin-colorscales/ & https://plotly.com/javascript/colorscales/
-- [ ] Pass the selected array to Plotly
 - [ ] What to do with the `any` data type?  No response yet on my [question](https://community.plotly.com/t/visualising-a-property-with-data-type-any/44343).
 - [ ] Add validation of arrays (based on the array type)
-- [ ] Solve error *"Indices must be valid indices for gd.data"*.  This is caused here:
+- [X] Solve error *"Indices must be valid indices for gd.data"*.  This is caused here:
    ```
    Plotly.extendTraces($scope.divId, {x: xVal,y: y}, arg, 20);
    ```
@@ -36,13 +35,11 @@ A node-RED contrib node to deliver Plotly charts
 - [ ] Fix header lines on the editableLists: they need to be properly aligned with the columns below, even when the config screen is resized. See this [discussion](https://discourse.nodered.org/t/alignment-of-headers-in-editablelist/32071)
 - [ ] Make sure the editableLists always expand to the full available area's.  See updateEditorHeight(node,node.editor)
 - [ ] Which step size do we need to specify on input of type "number" and "angle"?
-- [ ] Add the ability to generate an output message containing the image as image.  For SVG see [here](https://gist.github.com/etpinard/58a9e054b9ca7c0ca4c39976fc8bbf8a)
-- [X] Rename the first tabsheet to "Layout" (and also all related variables in the code)
+- [ ] Add the ability to generate an output message containing the graph as image.  For SVG see [here](https://gist.github.com/etpinard/58a9e054b9ca7c0ca4c39976fc8bbf8a)
 - [ ] When generating the input for Plotly (on the server-side), the names of the arrays should be replaced by the content of the arrays  --> not sure how to find the link between both ...
 - [ ] The `marker.symbol` property has a dropdown with both numeric and string values, since plotly offers two ways to enter symbols (e.g. "0" = "circle").  Not sure how to get rid of the numbers, because other `values` lists in the scheme.json file don't use both numbers and strings ...
 - [ ] What to do with _deprecated properties in the json scheme?  Suppose somebody has used property `A.B.C.D` which in a new version becomes `A.B.C._deprecated.D` then he will get an error (red border) because property `A.B.C.D` doesn't exist anymore. But there will be no link to the new `A.B.C._deprecated.D`. Would have been better if they had added a property `deprecated:true` to the existing property...
 - [ ] Show those options both for x and y trace types:
-
    + automatic ("-"): this will be the default value
    + linear:   1 2 3 4 5 
    + log: logarithmically - ( 1 10 100 1000 )
@@ -50,8 +47,4 @@ A node-RED contrib node to deliver Plotly charts
    + category
    + multicategory: what is this?
    + msg-based (which means the input message is required to contain the type): this is not available in the json schema, so I will need to add it automatically to the dropdown behind the scenes...
-- [ ] When injecting data via an input message and afterwards refreshing the browser screen, then I get error *"Plotly is not defined"*.  Reason is that the last message is replayed (client side?), before the `Plotly.react` statement is called.  Two possible solutions:
-   + Stop the replaying (especially the client-side), but perhaps then we run in troubles later on...
-   + Load the Plotly library synchronously.
 - [ ] Show an "Index" column in the editableList on the "Traces" tabsheet.
-- [ ] When an input message with data arrives, we constantly get an error *"gd.data is not an array"*.  The `gd` refers to our parent DIV element.  When the `Plotly.react` is executed, that DIV element will have a `data` attribute (that contains the data that has been passed to the `Plotly.react` function).  However for some reason the DIV element has an 'undefined' `data` attribute when the input message arrives ...
