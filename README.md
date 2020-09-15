@@ -19,3 +19,4 @@ A node-RED contrib node to deliver Plotly charts
 behind the scenes...
 - [ ] Show an "Index" column in the editableList on the "Traces" tabsheet.
 - [ ] Make the layout / traces adjustable via input messages & add validation
+- [ ] Follow up of the [issue](https://discourse.nodered.org/t/confusion-about-object-prototype/32605) for Plotly.js, where we ask them whether the isPlainObject could be fixed.  If it ever could become fixed, we have to remove the `createObject` ànd `createArray` from our code.
