@@ -501,8 +501,9 @@
             name: {value: ''},
             inputField: {value: "payload", required: true, validate: RED.validators.typedInput("inputFieldType")},
             inputFieldType: {value: "msg"},
+            sharedState: {value: "shared_state", required: true, validate: RED.validators.typedInput("sharedStateType")},
+            sharedStateType: {value: "node"},
             validateInputMsg: {value: true},
-            sharedState: {value: true},
             layoutProperties: {value: null, validate:function(_layoutProperties) {
                 if (_layoutProperties) {
                     // Create an array of layout property names
@@ -608,6 +609,33 @@
             $('#node-input-inputField').typedInput({
                 typeField: $("#node-input-inputFieldType"),
                 types: ['msg']
+            });
+            
+            // Show a custom "None" option in the sharedState field
+            var noneSharedStateType = {
+                value: "none",
+                label: "None",
+                hasValue: false // No input field at the right side
+            };
+            
+            // Show a custom "Volatile" option in the sharedState field
+            var volatileSharedStateType = {
+                value: "volatile",
+                label: "Volatile",
+                hasValue: false // No input field at the right side
+            };
+            
+            // Show a custom "node." option in the sharedState field.
+            // Don't offer 'flow' or 'global' to avoid clashes between multiple nodes accessing the same memory
+            var nodeContextSharedStateType = {
+                value: "node",
+                label: "node.",
+                hasValue: true // Input field at the right side
+            };
+            
+            $('#node-input-sharedState').typedInput({
+                typeField: $("#node-input-sharedStateType"),
+                types: [noneSharedStateType, volatileSharedStateType, nodeContextSharedStateType, 'msg']
             });
 
             $("#node-input-validate").click(function () {
@@ -1411,16 +1439,18 @@
     </div>
     
     <div class="form-row">
-        <label>&nbsp;</label>
-        <input type="checkbox" id="node-input-validateInputMsg" style="display: inline-block; width: auto; vertical-align: top;">
-        <label for="node-input-validateInputMsg" style="width:70%;"> Validate input messages</label>
+        <label style="padding-top: 8px" for="node-input-sharedState"><i class="fa fa-sign-in"></i> Shared state</label>
+        <input type="text" id="node-input-sharedState" style="width:70%">
+        <input type="hidden" id="node-input-sharedStateType">
     </div>
     
     <div class="form-row">
         <label>&nbsp;</label>
-        <input type="checkbox" id="node-input-sharedState" style="display: inline-block; width: auto; vertical-align: top;">
-        <label for="node-input-sharedState" style="width:70%;"> Store shared state on the server</label>
-    </div>   
+        <input type="checkbox" id="node-input-validateInputMsg" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-validateInputMsg" style="width:70%;"> Validate input messages</label>
+    </div>
+
+
     
     </br>
     
