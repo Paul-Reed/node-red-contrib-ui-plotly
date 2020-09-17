@@ -116,6 +116,7 @@ module.exports = function(RED) {
         // Copy the non-plotly related information (which we need on the frontend side), from the node config to the plotly config
         plotlyConfig.id = config.id;
         plotlyConfig.sharedState = config.sharedState;
+        plotlyConfig.sharedStateType = config.sharedStateType;
         
         fillObjectWithProperties(plotlyConfig.layout, config.layoutProperties || []);
                 
@@ -468,13 +469,29 @@ module.exports = function(RED) {
                         // Convert the arrays to an arrays of arrays (as Plotly expects that kind of input)
                         newMsg.input.data.x = (newMsg.input.data.x).map(i => [i]);
                         newMsg.input.data.y = (newMsg.input.data.y).map(i => [i]);
-                        
-                        // Update the server-side traces with new data, if shared state is requested
-                        if (config.sharedState) {
+
+                        // Update the server-side traces (in the chart in Jsdom) with new data, if shared state is requested
+                        if (config.sharedStateType !== "none") {
                             node.plotlyServerDom.window.Plotly.extendTraces(divId, {x: newMsg.input.data.x, y: newMsg.input.data.y}, newMsg.input.arg, 20); // 20 = traceIndices (number of points in chart, needs to be an option in node config)
-                            
-                            // Send an output message containing the (updated) shared state
-                            node.send({ payload: node.getSharedState() });
+                        }
+
+                        // Now the server-side chart is up to date, let's see what to do with the shared state
+                        switch(config.sharedStateType) {
+                            case "none":
+                                // There is no shared state, so do nothing
+                                break;
+                            case "volatile":
+                                // There is shared state (only in Jsdom), but nothing has to be done with it
+                                break;
+                            case "msg":
+                                // Send an output message containing the (updated) shared state in the specified output field
+                                var outputMsg = {};
+                                RED.util.setMessageProperty(outputMsg, config.sharedState, node.getSharedState());
+                                node.send(outputMsg);
+                                break;
+                            case "node":
+                                node.context().set(config.sharedState, node.getSharedState());
+                                break;
                         }
                         
                         // Seem that all the specified msg fields are available, so send a message to the client (containing msg.input).
