@@ -42,51 +42,43 @@ module.exports = function(RED) {
         console.log("Javascript file " + plotlyJsPath + " does not exist");
         plotlyJsPath = null;
     }
-
     
-    // -------------------------------------------------------------------------------------------------
     // Load Plotly on the NodeJs server in a Plotly context (which is a NodeJs VM)
-    // -------------------------------------------------------------------------------------------------
-    try {
-        // We need Plotly to run on the server side (NodeJs), however Plotly only runs in a browser.
-        // However on their wiki page it is explained how to work around this:
-        // See https://github.com/jsdom/jsdom/wiki/Don%27t-stuff-jsdom-globals-onto-the-Node-global
-        // So we need to run the Plotly code in the JsDom context, in order to keep the NodeJs globals
-        // See example on https://gist.github.com/etpinard/58a9e054b9ca7c0ca4c39976fc8bbf8a
+    function createServerDom(divId) {
+        var plotlyServerDom;
         
-        //plotlySrc = fs.readFileSync(plotlyJsPath, 'utf-8');
-        //const fig = { data: [{ y: [1, 2, 1] }] }
-        //const opts = { format: 'svg', imageDataOnly: true }
-
-        plotlyServerDom = new jsdom.JSDOM('', { runScripts: 'dangerously'});
-     
-        // Mock a few things that JSDOM doesn't support out-of-the-box
-        plotlyServerDom.window.HTMLCanvasElement.prototype.getContext = function() { return null; };
-        plotlyServerDom.window.URL.createObjectURL = function() { return null; };
-        
-        // Script to add global functions (to create a Javascript object or array) in the server DOM context
-        const script = new vm.Script(`
-            function createObject() {
-                return {};
-            }
+        try {
+            // We need Plotly to run on the server side (NodeJs), however Plotly only runs in a browser.
+            // However on their wiki page it is explained how to work around this:
+            // See https://github.com/jsdom/jsdom/wiki/Don%27t-stuff-jsdom-globals-onto-the-Node-global
+            // So we need to run the Plotly code in the JsDom context, in order to keep the NodeJs globals
+            // See example on https://gist.github.com/etpinard/58a9e054b9ca7c0ca4c39976fc8bbf8a
             
-            function createArray() {
-                return [];
-            }
-        `);
+            plotlyServerDom = new jsdom.JSDOM('<!DOCTYPE html><body><div id="' + divId + '"></div></body>', { runScripts: 'dangerously'});
+         
+            // Mock a few things that JSDOM doesn't support out-of-the-box
+            plotlyServerDom.window.HTMLCanvasElement.prototype.getContext = function() { return null; };
+            plotlyServerDom.window.URL.createObjectURL = function() { return null; };
 
-        // Execute the script in the VM (of jsDom), so that the global function is added to the VM context
-        const serverDomVmContext = plotlyServerDom.getInternalVMContext();
-        script.runInContext(serverDomVmContext);
-
-        var plotlyJsSource = fs.readFileSync(plotlyJsPath, 'utf-8');
-        plotlyServerDom.window.eval(plotlyJsSource);
+            var plotlyJsSource = fs.readFileSync(plotlyJsPath, 'utf-8');
+            plotlyServerDom.window.eval(plotlyJsSource);
+            
+            // See https://github.com/plotly/plotly.js/issues/5151
+            plotlyServerDom.window.process = {versions: 1};
+        }
+        catch(e) {
+            plotlyServerDom = null;
+            node.error("Cannot setup the Plotly context: " + e);
+        }
         
-        //node.virtualWindow.Plotly.toImage(fig, opts);
+        return plotlyServerDom;
     }
-    catch(e) {
-        console.warn("Cannot setup the Plotly context: " + e);
-    }
+
+    // Create a global server dom, to be used in the http admin endpoint below.
+    // Indeed that endpoint will be called for undeployed Plotly nodes, i.e. which are not know on the server side yet.
+    // So we cannot use the node.plotlyServerDom in that endpoint.
+    // Since there is no node id, we will use - the randomly chosen - name "global" ...
+    globalPlotlyServerDom = createServerDom("global");
     
     function LZ(n){
         if(n <= 9) {
@@ -106,7 +98,7 @@ module.exports = function(RED) {
             for (var j = 0; j < propertyNames.length-1; j++) {
                 var propertyName = propertyNames[j];
                 if (!(propertyName in pointer)) {
-                    pointer[propertyName] = plotlyServerDom.window.createObject();
+                    pointer[propertyName] = {};
                 }
                 pointer = pointer[propertyName];
             }
@@ -116,14 +108,16 @@ module.exports = function(RED) {
     
     // Create a Plotly config based on the config (screen) from this node
     function createPlotlyConfig(config) {
-        var plotlyConfig = plotlyServerDom.window.createObject();
-        plotlyConfig.layout = plotlyServerDom.window.createObject();
-        plotlyConfig.traces = plotlyServerDom.window.createArray();
-        plotlyConfig.configuration = plotlyServerDom.window.createObject();
+        var plotlyConfig = {};
+        plotlyConfig.layout = {};
+        plotlyConfig.traces = [];
+        plotlyConfig.configuration = {};
         
+        // Copy the non-plotly related information (which we need on the frontend side), from the node config to the plotly config
         plotlyConfig.id = config.id;
+        plotlyConfig.sharedState = config.sharedState;
         
-        fillObjectWithProperties(plotlyConfig.layout, config.layoutProperties || plotlyServerDom.window.createArray());
+        fillObjectWithProperties(plotlyConfig.layout, config.layoutProperties || []);
                 
         // Some property values need post-processing.  The client-side will wrap the property values with "#@...@#", so the 
         // server-side will know which kind of post-processing is required.
@@ -158,7 +152,7 @@ module.exports = function(RED) {
         //    }  
         config.traces.forEach(function(traceConfig) {
             // Initalize the x-axis with a timestamp, otherwise the first datapoint will be 1970!!
-            var trace = plotlyServerDom.window.createObject();
+            var trace = {};
             
             trace.name = traceConfig.name;
             trace.type = traceConfig.type;
@@ -180,7 +174,7 @@ module.exports = function(RED) {
                     // The properties that contain array names, can be recognized by the PLOTLY_ARRAY_PREFIX in their value
                     else if(traceProperty.value.startsWith(PLOTLY_ARRAY_PREFIX)) {
                         var arrayName = traceProperty.value.replace(PLOTLY_ARRAY_PREFIX, "");
-                        var arrayContent = plotlyServerDom.window.createArray();
+                        var arrayContent = [];
                         
                         for(var j = 0; j < config.arrays.length; j++) {
                             var array = config.arrays[j];
@@ -268,6 +262,24 @@ module.exports = function(RED) {
     function PlotlyChart(config) {
         try {
             var node = this;
+            
+            node.getSharedState = function() {
+                var sharedState = [];
+                
+                // Get the 'data' attribute of the Plotly chart in the server-side Jsdom tree
+                var graphData = node.plotlyServerDom.window.document.getElementById(divId).data;
+                            
+                // Only keep (for every trace in the graphData) the x and y variables, which are arrays of values
+                for (var j = 0; j < graphData.length; j++) {
+                    sharedState.push({
+                        x: graphData[j].x,
+                        y: graphData[j].y
+                    });
+                }
+                
+                return sharedState;
+            }
+            
             if(ui === undefined) {
                 ui = RED.require("node-red-dashboard")(RED);
             }
@@ -275,10 +287,18 @@ module.exports = function(RED) {
             
             if (checkConfig(node, config)) {
                 var plotlyConfig = createPlotlyConfig(config);
+
+                var divId = "plotlychart_" + plotlyConfig.id;
+                node.plotlyServerDom = createServerDom(divId);
                 
-                if (plotlyServerDom.window) {
+                // Create a Plotly server-side chart, if shared state is required
+                if (config.sharedState) {
+                    node.plotlyServerDom.window.Plotly.react(divId, plotlyConfig.traces, plotlyConfig.layout, plotlyConfig.configuration);
+                }
+                
+                if (node.plotlyServerDom.window) {
                     // Let Plotly validate the config
-                    var jsonResult = plotlyServerDom.window.Plotly.validate(plotlyConfig.traces, plotlyConfig.layout);
+                    var jsonResult = node.plotlyServerDom.window.Plotly.validate(plotlyConfig.traces, plotlyConfig.layout);
                     
                     if (jsonResult) {
                         // TODO show which error(s)  ???
@@ -310,13 +330,13 @@ module.exports = function(RED) {
                         // ******************************************************************************************
                         
                         if (config.validateInputMsg) {
-                            if (!plotlyServerDom.window) {
+                            var newMsg = {};
+                            
+                            if (!node.plotlyServerDom.window) {
                                 node.error("Cannot validate the msg, since Plotly hasn't been loaded!");
                                 newMsg.invalid_message = true;
                                 return { msg: newMsg };
                             }
-
-                            var newMsg = {};
 
                             // Would like to ignore invalid input messages, but that seems not to possible in UI nodes:
                             // See https://discourse.nodered.org/t/custom-ui-node-not-visible-in-dashboard-sidebar/9666
@@ -333,19 +353,19 @@ module.exports = function(RED) {
                             }
                             
                             if (!newMsg.input) {
-                                node.error(node.config.inputField + " is not available in the message");
+                                node.error(config.inputField + " is not available in the message");
                                 newMsg.invalid_message = true;
                                 return { msg: newMsg };
                             }
 
                             if (typeof newMsg.input !== 'object') {
-                                node.error(node.config.inputField + " should be a Javascript object");
+                                node.error(config.inputField + " should be a Javascript object");
                                 newMsg.invalid_message = true;
                                 return { msg: newMsg };
                             }
 
                             if (!newMsg.input.data && !newMsg.input.layout) {
-                                node.error("The input msg should contain " + node.config.inputField + ".data or " + node.config.inputField + "layout");
+                                node.error("The input msg should contain " + config.inputField + ".data or " + config.inputField + "layout");
                                 newMsg.invalid_message = true;
                                 return { msg: newMsg };
                             }
@@ -357,19 +377,19 @@ module.exports = function(RED) {
 
                             if (newMsg.input.data) {
                                 if (typeof newMsg.input.data !== 'object') {
-                                    node.error(node.config.inputField + ".data should be a Javascript object");
+                                    node.error(config.inputField + ".data should be a Javascript object");
                                     newMsg.invalid_message = true;
                                     return { msg: newMsg };
                                 }
 
                                 if (!newMsg.input.data.y) {
-                                    node.error(node.config.inputField + ".y is not available in the message");
+                                    node.error(config.inputField + ".y is not available in the message");
                                     newMsg.invalid_message = true;
                                     return { msg: newMsg };
                                 }
                                 
                                 if (!Array.isArray(newMsg.input.data.y)) {
-                                    node.error(node.config.inputField + ".data.y should be a an array");
+                                    node.error(config.inputField + ".data.y should be a an array");
                                     newMsg.invalid_message = true;
                                     return { msg: newMsg };
                                 }
@@ -377,18 +397,18 @@ module.exports = function(RED) {
                                 var tracesCount = plotlyConfig.traces.length;
                                 
                                 if (newMsg.input.data.y.length != tracesCount) {
-                                    node.error(node.config.inputField + ".data.y should contain " + tracesCount + " values (one for every trace)");
+                                    node.error(config.inputField + ".data.y should contain " + tracesCount + " values (one for every trace)");
                                     newMsg.invalid_message = true;
                                     return { msg: newMsg };
                                 }
                                 
-                                var yAxisType = (plotlyConfig.layout.yaxis || plotlyServerDom.window.createObject()).type || "-"; // Default "-"
+                                var yAxisType = (plotlyConfig.layout.yaxis || {}).type || "-"; // Default "-"
                                 
                                 for (var i = 0; i < newMsg.input.data.y.length; i++) {
                                     var wrongType = hasDataCorrectType(newMsg.input.data.y[i], yAxisType);
                                     
                                     if (wrongType) {
-                                        node.error(node.config.inputField + ".data.y[" + i + "] should be type " + wrongType);
+                                        node.error(config.inputField + ".data.y[" + i + "] should be type " + wrongType);
                                         newMsg.invalid_message = true;
                                         return { msg: newMsg };
                                     }
@@ -402,25 +422,25 @@ module.exports = function(RED) {
                                         var timestamp = now.getFullYear() + "-" + LZ(now.getMonth() + 1) + "-" + LZ(now.getDate()) + " " + LZ(now.getHours()) + ":" + LZ(now.getMinutes()) + ":" + LZ(now.getSeconds());
 
                                         // Create an array, with one x value (i.e. timestamp) for every y value
-                                        newMsg.input.data.x = plotlyServerDom.window.createArray();;
+                                        newMsg.input.data.x = [];
                                         for (var i = 0; i < newMsg.input.data.y.length; ++i) {
                                             newMsg.input.data.x.push(timestamp);
                                         }
                                     }
                                     else {
-                                        node.error(node.config.inputField + ".x is not available in the message");
+                                        node.error(config.inputField + ".x is not available in the message");
                                         newMsg.invalid_message = true;
                                         return { msg: newMsg };
                                     }
                                 }
                                 
-                                var xAxisType = (plotlyConfig.layout.xaxis || plotlyServerDom.window.createObject()).type || "-"; // Default "-"
+                                var xAxisType = (plotlyConfig.layout.xaxis || {}).type || "-"; // Default "-"
                                 
                                 for (var i = 0; i < newMsg.input.data.x.length; i++) {
                                     var wrongType = hasDataCorrectType(newMsg.input.data.x[i], xAxisType);
                                     
                                     if (wrongType) {
-                                        node.error(node.config.inputField + ".data.x[" + i + "] should be type " + wrongType);
+                                        node.error(config.inputField + ".data.x[" + i + "] should be type " + wrongType);
                                         newMsg.invalid_message = true;
                                         return { msg: newMsg };
                                     }
@@ -429,7 +449,7 @@ module.exports = function(RED) {
 
                             // At this point we have done all our basic validations, and tried to trigger user-friendly error messages.
                             // Now let Plotly validate the input data
-                            /*var jsonResult = plotlyServerDom.window.Plotly.validate(newMsg.input);
+                            /*var jsonResult = node.plotlyServerDom.window.Plotly.validate(newMsg.input);
 
                             if (jsonResult) {
                                 // TODO show which error(s)  ???
@@ -438,7 +458,25 @@ module.exports = function(RED) {
                                 return { msg: newMsg };
                             }*/
                         }
-
+                            
+                        // Since the input message needs to contain one value for each trace, pass all trace indexes to Plotly
+                        newMsg.input.arg = [];
+                        for (var i = 0; i < config.traces.length; ++i) {
+                            newMsg.input.arg.push(i);
+                        }
+                        
+                        // Convert the arrays to an arrays of arrays (as Plotly expects that kind of input)
+                        newMsg.input.data.x = (newMsg.input.data.x).map(i => [i]);
+                        newMsg.input.data.y = (newMsg.input.data.y).map(i => [i]);
+                        
+                        // Update the server-side traces with new data, if shared state is requested
+                        if (config.sharedState) {
+                            node.plotlyServerDom.window.Plotly.extendTraces(divId, {x: newMsg.input.data.x, y: newMsg.input.data.y}, newMsg.input.arg, 20); // 20 = traceIndices (number of points in chart, needs to be an option in node config)
+                            
+                            // Send an output message containing the (updated) shared state
+                            node.send({ payload: node.getSharedState() });
+                        }
+                        
                         // Seem that all the specified msg fields are available, so send a message to the client (containing msg.input).
                         // This way the message has been flattened, so the client doesn't need to access the nested msg properties.
                         // See https://discourse.nodered.org/t/red-in-ui-nodes/29824/2
@@ -455,7 +493,7 @@ module.exports = function(RED) {
                         $scope.init = function (config) {
                             $scope.config = config;
                             $scope.divId = "plotlychart_" + config.id;
-            
+
                             // Load the Plotly library in the HEAD of the page, not locally in the html!
                             // See https://stackoverflow.com/questions/45868530/why-am-i-getting-an-uncaught-referenceerror-plotly-is-not-defined
                             // We will need to load the library SYNCHRONOUS, while that is normally not considered good practice!  
@@ -463,13 +501,31 @@ module.exports = function(RED) {
                             // and then code inside the msg watch would give an error "Plotly is not defined"...
                             var xhrObject = new XMLHttpRequest();
                             // open and send a synchronous request
-                            xhrObject.open('GET', "ui_plotly_chart/plotly.js", false);
+                            xhrObject.open('GET', "ui_plotly_chart/dashboard/" + config.id + "/plotly.js", false);
                             xhrObject.send('');
                             // add the returned content to a newly created script tag
                             var se = document.createElement('script');
                             se.type = "text/javascript";
                             se.text = xhrObject.responseText;
                             document.getElementsByTagName('head')[0].appendChild(se);
+                            
+                            if (config.sharedState) {
+                                // When shared state is enable, load the data points synchronous from the server (jsDom) and add them to the client-side Plotly chart
+                                var sharedState = $.ajax({
+                                                        type: "GET",
+                                                        dataType: "json",
+                                                        url: "ui_plotly_chart/dashboard/" + config.id + "/shared_state",
+                                                        async: false
+                                                    }).responseText;
+                                                    
+                                // Convert the returned json string to a Javascript object
+                                sharedState = JSON.parse(sharedState);
+                                                    
+                                for (var i = 0; i < config.traces.length; ++i) {
+                                    config.traces[i].x = sharedState[i].x;
+                                    config.traces[i].y = sharedState[i].y;
+                                }
+                            }
                             
                             // Let Plotly setup the layout and traces.
                             // After that our DIV element will be contain a 'data' attribute (called 'gd.data'), containing our configuration.
@@ -486,28 +542,21 @@ module.exports = function(RED) {
                             if (msg.invalid_message) {
                                 return;
                             }
-
-                            // Get all the input from the input message
-                            var y = msg.input.data.y;
-                            var x = msg.input.data.x;
                             
-                            // Identify trace indexes (arg) for updating by extendTraces
-                            var arg = [];
-                            for (var i = 0; i < $scope.config.traces.length; ++i) {
-                                arg.push(i);
+                            //prevent client side replays from showing the menu when switching dashboard tabs
+                            if(msg._ui_cm_already_seen){
+                                console.log("ui_context_menu: msg already seen - exiting!")
+                                return;
                             }
-                            
-                            // Convert the arrays to an arrays of arrays (as Plotly expects that kind of input)
-                            y = (y).map(i => [i]);
-                            x = (x).map(i => [i]);
+                            msg._ui_cm_already_seen = true;
 
-                            // Update traces with new data
-                            Plotly.extendTraces($scope.divId, {x: x, y: y}, arg, 20); // 20 = traceIndices (number of points in chart, needs to be an option in node config)
+                            // Update the client-side traces with new data
+                            Plotly.extendTraces($scope.divId, {x: msg.input.data.x, y: msg.input.data.y}, msg.input.arg, 20); // 20 = traceIndices (number of points in chart, needs to be an option in node config)
                             
                             // 'chart_format' includes chart title, background & plot colour.
                             // 'trace_format' includes trace colour, markers, trace 'shape' (linear, spline, etc).
-                            let chart_format = msg.payload.chart_format || null;
-                            let trace_format = msg.payload.trace_format || null;
+                            //let chart_format = msg.payload.chart_format || null;
+                            //let trace_format = msg.payload.trace_format || null;
 
                             // Update both traces & chart formats
                             // TODO Plotly.update($scope.divId, trace_format, chart_format, arg);
@@ -536,18 +585,34 @@ module.exports = function(RED) {
     var uiPath = ((RED.settings.ui || {}).path) || 'ui';
 	
     // Create the complete server-side path
-    uiPath = '/' + uiPath + '/ui_plotly_chart/plotly.js';
+    uiPath = '/' + uiPath + '/ui_plotly_chart/dashboard/:node_id/:resource';
 
     // Replace a sequence of multiple slashes (e.g. // or ///) by a single one
     uiPath = uiPath.replace(/\/+/g, '/');
 	
     // Make the minified Plotly.js library available (to the DASHBOARD).
-    RED.httpNode.get(uiPath, function(req, res){
-        if (plotlyJsPath) {
-            res.sendFile(plotlyJsPath);
-        }
-        else {
-            res.status(404).json('Undefined Plotly path');
+    RED.httpNode.get(uiPath, function(req, res) {
+        switch(req.params.resource) { 
+            case "plotly.js":
+                if (plotlyJsPath) {
+                    res.sendFile(plotlyJsPath);
+                }
+                else {
+                    res.status(404).json('Undefined Plotly path');
+                }
+                break;
+            case "shared_state":
+                var node = RED.nodes.getNode(req.params.node_id);
+                
+                if (node) {
+                    res.status(200).json(node.getSharedState());
+                }
+                else {
+                    res.status(404).json('Cannot find node with id = ' + req.params.node_id);
+                }
+                break;
+            default:
+                res.status(404).json('Unknown plotly resource');
         }
     });
     
@@ -557,10 +622,10 @@ module.exports = function(RED) {
         
         switch(req.params.resource) {     
             case "json_schema":
-                if (plotlyServerDom.window) {
+                if (globalPlotlyServerDom.window) {
                     // Generate the plotly json schema for the flow editor.
                     // See https://github.com/plotly/plotly.js/issues/5087
-                    jsonResult = plotlyServerDom.window.Plotly.PlotSchema.get();
+                    jsonResult = globalPlotlyServerDom.window.Plotly.PlotSchema.get();
                 }
                 else {
                     console.log("Cannot generate json schema, since Plotly hasn't been loaded!");
@@ -571,14 +636,14 @@ module.exports = function(RED) {
                 jsonResult = createPlotlyConfig(req.body.node_config);
                 break;
             case "validate_config":
-                if (plotlyServerDom.window) {
+                if (globalPlotlyServerDom.window) {
                     
-                    plotlyServerDom.window.layout
+                    globalPlotlyServerDom.window.layout
                     // Convert the node config to a Plotly config
                     var plotlyConfig = createPlotlyConfig(req.body.node_config);
                     
                     // Let Plotly validate the configuration
-                    jsonResult = plotlyServerDom.window.Plotly.validate(plotlyConfig.traces, plotlyConfig.layout);
+                    jsonResult = globalPlotlyServerDom.window.Plotly.validate(plotlyConfig.traces, plotlyConfig.layout);
                     
                     // Plotly returns undefined when there are no validation issues.
                     // Set it to an empty issue array, to avoid that below a status 404 would be returned.
