@@ -292,6 +292,13 @@ module.exports = function(RED) {
                 var divId = "plotlychart_" + plotlyConfig.id;
                 node.plotlyServerDom = createServerDom(divId);
                 
+                // Get node size properties to set plot size for autosize
+                var ui = RED.require('node-red-dashboard')(RED);
+                var sizes = ui.getSizes();
+                    // Additional 14px & 9px deducted because of default widget padding
+                    var plot_size_x  = (((config.width*sizes.sx)+((config.width -1)*sizes.cx))-14);
+                    var plot_size_y  = (((config.height*sizes.sy)+((config.height -1)*sizes.cy))-9);
+
                 // Create a Plotly server-side chart, if shared state is required
                 if (config.sharedState) {
                     node.plotlyServerDom.window.Plotly.react(divId, plotlyConfig.traces, plotlyConfig.layout, plotlyConfig.configuration);
